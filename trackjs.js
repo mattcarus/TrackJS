@@ -1,9 +1,11 @@
 // track.js
 
+//Enter the location (as seen by a web client) of your TrackHQ.php file here
+var trackHQ = "http://mydomain.com/trackhq.php";
+
 var clientID;
 var pageLoadTime = Date.now();
 var jQuerySrcLocation = 'http://code.jquery.com/jquery-1.11.0.min.js';
-var trackHQ = "http://mattcarus.co.uk/track.php";
 
 var track = {
 	init: function() {
