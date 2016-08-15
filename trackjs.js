@@ -3,6 +3,9 @@
 //Enter the location (as seen by a web client) of your TrackHQ.php file here
 var trackHQ = "http://mydomain.com/trackhq.php";
 
+// Set debug to true to log events to the browser's javascript console, false hides events
+var debug = false;
+
 var clientID;
 var pageLoadTime = Date.now();
 var jQuerySrcLocation = 'http://code.jquery.com/jquery-1.11.0.min.js';
@@ -18,7 +21,7 @@ var track = {
 			jQueryScript.type = 'text/javascript';
 			jQueryScript.src = jQuerySrcLocation;
 			document.getElementsByTagName('head')[0].appendChild(jQueryScript);
-			setTimeout(function() { track.attachEvents() }, 100);
+			setTimeout(function() { track.attachEvents(); }, 100);
 		}
 	},
 	getClientID: function() {
@@ -74,9 +77,12 @@ var track = {
 				*/
 				$("body").find("*").each(function() {
 					$(this).click(function() {
-						track.sendEvent({event: 'click', data: this.toString(), tag: this.tagName, name: this.name, id: this.id})
-					})
+						track.sendEvent({event: 'click', data: this.toString(), tag: this.tagName, name: this.name, id: this.id});
+					});
 				});
+				$(document).on("click", function(event) {
+					track.sendEvent({event: 'click', click: {x: event.pageX, y: event.pageY}, scrolled: {x: $(document).scrollLeft(), y: $(document).scrollTop()}});
+				} );
 		}
 	},
 	sendEvent: function(event) {
@@ -94,7 +100,9 @@ var track = {
 		}).done(this.logger(event));
 	},
 	logger: function(logMsg) {
-		console.log('track.js: ' + clientID + " : " + JSON.stringify(logMsg));
+		if ( debug ) {
+			console.log('track.js: ' + clientID + " : " + JSON.stringify(logMsg));
+		}
 	},
 	generateGUID: function() {
 		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
