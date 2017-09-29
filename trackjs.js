@@ -1,17 +1,15 @@
-// track.js
-
-//Enter the location (as seen by a web client) of your TrackHQ.php file here
-var trackHQ = "http://mydomain.com/trackhq.php";
-
-// Set debug to true to log events to the browser's javascript console, false hides events
+var trackHQ;
 var debug = false;
-
-var clientID;
+var clientID;	// This is the ID for TrackJS
+var appUserID;	// This is an app-supplied user ID, useful for cross-correlating TrackJS events with other logging 
 var pageLoadTime = Date.now();
 var jQuerySrcLocation = 'http://code.jquery.com/jquery-1.11.0.min.js';
 
 var track = {
-	init: function() {
+	init: function(configTrackHQ, configAppUserID, configDebug) {
+		trackHQ=configTrackHQ;
+		appUserID=configAppUserID||null;
+		debug=configDebug||false;
 		clientID = this.getClientID();
 		this.logger('Set ClientID');
 		this.logger('TrackJS Loading...');
@@ -25,19 +23,16 @@ var track = {
 		}
 	},
 	getClientID: function() {
-		var cookie = document.cookie.split(';');
-		for(var i=0; i<cookie.length; i++) 
+		if ( this.getCookie("TrackJS") )
 		{
-		  var c = cookie[i].trim();
-		  if (c.indexOf("TrackJS=")==0) {
-			  return c.substring("TrackJS=".length,c.length);
-		  }
+			return this.getCookie("TrackJS");
 		}
-		var newClientId = this.generateGUID();
-		var d = new Date();
-		d.setTime(d.getTime()+(365*24*60*60*1000));
-		document.cookie = "TrackJS=" + newClientId + "; expires=" + d.toGMTString();
-		return newClientId;
+		else
+		{
+			var newClientId = this.generateGUID();
+			this.setCookie("TrackJS", newClientId, 365);
+			return newClientId;
+		}
 	},
 	attachEvents: function() {
 		if (typeof jQuery == 'undefined') {
@@ -49,21 +44,17 @@ var track = {
 				this.logger('jQuery loaded');
 				this.logger('Attaching events');
 				
-				$(document).ready( function() { track.sendEvent({event: 'load', data: this.toString(), tag: this.tagName, name: this.name, id: this.id}) } );
+				$(document).ready( function() { track.sendEvent({"event": "load"}) } );
 				$(window).on('beforeunload', function() {
-					track.sendEvent({event: 'unload', data: this.toString(), tag: this.tagName, name: this.name, id: this.id});
+					track.sendEvent({"event": "unload"});
 				});
-//				$(document).unload( function() { track.sendEvent({event: 'unload', data: this.toString(), tag: this.tagName, name: this.name, id: this.id}) } );
-				$("a").each(function() {
-					$(this).click(function() { 
-						track.sendEvent({event: 'click', data: this.toString(), tag: this.tagName, name: this.name, id: this.id})
-					})
-				});
+				$(document).on("click", function(event) {
+					track.sendEvent({"event": "click", "click": {"x": event.pageX, "y": event.pageY}, "scrolled": {"x": $(document).scrollLeft(), "y": $(document).scrollTop()}});
+				} );
 				
-				/*
-				 * Add additional events here, for example you could monitor mouseovers using this:
-				 *
-				 
+			/*
+			 * Add additional events here, for example you could monitor mouseovers using this:
+			 *
 				$("body").find("*").each(function() {
 					$(this).mouseover(function() { 
 						track.sendEvent({event: 'mouseOver', data: this.toString(), tag: this.tagName, name: this.name, id: this.id})
@@ -74,15 +65,17 @@ var track = {
 						track.sendEvent({event: 'mouseOut', data: this.toString(), tag: this.tagName, name: this.name, id: this.id})
 					})
 				});
-				*/
+				$("a").each(function() {
+					$(this).click(function() { 
+						track.sendEvent({event: 'click', data: this.toString(), tag: this.tagName, name: this.name, id: this.id})
+					})
+				});
 				$("body").find("*").each(function() {
 					$(this).click(function() {
 						track.sendEvent({event: 'click', data: this.toString(), tag: this.tagName, name: this.name, id: this.id});
 					});
 				});
-				$(document).on("click", function(event) {
-					track.sendEvent({event: 'click', click: {x: event.pageX, y: event.pageY}, scrolled: {x: $(document).scrollLeft(), y: $(document).scrollTop()}});
-				} );
+			*/
 		}
 	},
 	sendEvent: function(event) {
@@ -91,13 +84,26 @@ var track = {
 		event._url = document.URL;
 		event._title = document.title;
 		event._clientid = clientID;
+		event._appUserID = appUserID;
 		
+	/*
+	 * AJAX-style callback to server (note CORS)
+	 */
+	/*
 		$.ajax({
 			type: "POST",
 			crossDomain: true,
 			url: trackHQ,
 			data: event
 		}).done(this.logger(event));
+	*/
+	/*
+	 * Pixel-style callback
+	 */
+		var pixel = document.createElement('img');
+		pixel.src = trackHQ + "?event=" + btoa(JSON.stringify(event));
+		document.getElementsByTagName('body')[0].appendChild(pixel);
+		this.logger(event);
 	},
 	logger: function(logMsg) {
 		if ( debug ) {
@@ -109,6 +115,26 @@ var track = {
 			var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
 			return v.toString(16);
 		});
+	},
+	getCookie: function(cookieName) {
+	    var name = cookieName + "=";
+	    var decodedCookie = decodeURIComponent(document.cookie);
+	    var ca = decodedCookie.split(';');
+	    for(var i = 0; i <ca.length; i++) {
+	        var c = ca[i];
+	        while (c.charAt(0) == ' ') {
+	            c = c.substring(1);
+	        }
+	        if (c.indexOf(name) == 0) {
+	            return c.substring(name.length, c.length);
+	        }
+	    }
+	    return false;
+	},
+	setCookie: function(cookieName, cookieValue, cookieValidityDays) {
+	    var d = new Date();
+	    d.setTime(d.getTime() + (cookieValidityDays * 24 * 60 * 60 * 1000));
+	    var expires = "expires="+d.toUTCString();
+	    document.cookie = cookieName + "=" + cookieValue + ";" + expires + ";path=/";
 	}
 };
-track.init();

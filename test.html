@@ -47,7 +47,10 @@ Test<br />
 Test<br />
 Test<br />
 Test<br />
-<script src="trackjs.js">
+<script src="trackjs.min.js"></script>
+<script>
+	var userId = 123456;
+	track.init("http://localhost:8000/pixel.php", userId);
 </script>
 </body>
 </html>
