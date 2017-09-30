@@ -47,10 +47,22 @@ Test<br />
 Test<br />
 Test<br />
 Test<br />
-<script src="trackjs.min.js"></script>
+<script src="trackjs.js"></script>
 <script>
+	/*
+	 *  Let's force some geo activity so that the tracking library can use it...
+	 */
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+        	alert(position.coords.latitude + ", " + position.coords.longitude);
+        });
+    } else {
+        alert("Geolocation is not supported by this browser.");
+    }
+
 	var userId = 123456;
-	track.init("http://localhost:8000/pixel.php", userId);
+	track.init("http://localhost:8000/pixel.php", userId, true);
+	
 </script>
 </body>
 </html>

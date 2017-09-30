@@ -2,6 +2,8 @@ var trackHQ;
 var debug = false;
 var clientID;	// This is the ID for TrackJS
 var appUserID;	// This is an app-supplied user ID, useful for cross-correlating TrackJS events with other logging 
+var geoPromise;
+var geo;
 var pageLoadTime = Date.now();
 var jQuerySrcLocation = 'http://code.jquery.com/jquery-1.11.0.min.js';
 
@@ -11,6 +13,8 @@ var track = {
 		appUserID=configAppUserID||null;
 		debug=configDebug||false;
 		clientID = this.getClientID();
+		geoPromise = this.getGeo();
+		geoPromise.then(function(result){alert(result)}, function(err){alert(err)});
 		this.logger('Set ClientID');
 		this.logger('TrackJS Loading...');
 		if (typeof jQuery == 'undefined') {
@@ -25,14 +29,33 @@ var track = {
 	getClientID: function() {
 		if ( this.getCookie("TrackJS") )
 		{
+			this.logger("Found TrackJS cookie");
 			return this.getCookie("TrackJS");
 		}
 		else
 		{
+			this.logger("No TrackJS cookie, generating new ID")
 			var newClientId = this.generateGUID();
 			this.setCookie("TrackJS", newClientId, 365);
 			return newClientId;
 		}
+	},
+	getGeo: function() {
+	    return new Promise((resolve, reject) =>
+
+	        navigator.permissions ?
+	
+	        // Permission API is implemented
+	        navigator.permissions.query({name:'geolocation'}).then(permission =>
+	            // is geolocation granted?
+	            permission.state === "granted"
+	            ? navigator.geolocation.getCurrentPosition(pos => resolve(pos.coords))
+	            : resolve(null),
+	        reject) :
+	
+	        // Permission API was not implemented
+	        reject(new Error("Permission API is not supported"))
+	    )
 	},
 	attachEvents: function() {
 		if (typeof jQuery == 'undefined') {
@@ -85,6 +108,7 @@ var track = {
 		event._title = document.title;
 		event._clientid = clientID;
 		event._appUserID = appUserID;
+		event._geo = geo;
 		
 	/*
 	 * AJAX-style callback to server (note CORS)
