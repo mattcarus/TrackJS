@@ -23,7 +23,10 @@ var track = {
 			jQueryScript.type = 'text/javascript';
 			jQueryScript.src = jQuerySrcLocation;
 			document.getElementsByTagName('head')[0].appendChild(jQueryScript);
-			setTimeout(function() { track.attachEvents(); }, 100);
+			setTimeout(function() {
+				track.attachEvents();
+				track.startViewTimers();
+			}, 100);
 		}
 	},
 	getClientID: function() {
@@ -100,6 +103,32 @@ var track = {
 				});
 			*/
 		}
+	},
+	startViewTimers: function() {
+		setTimeout(function(){
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 10, "hidden": document.hidden} });
+		}, 10000);	// 0-10 seconds
+		setTimeout(function(){
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 30, "hidden": document.hidden} });
+		}, 30000);	// 10-30 seconds
+		setTimeout(function(){
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 60, "hidden": document.hidden} });
+		}, 60000);	// 30-60 seconds
+		setTimeout(function(){
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 120, "hidden": document.hidden} });
+		}, 120000);	// 1-2 minutes
+		setTimeout(function(){
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 300, "hidden": document.hidden} });
+		}, 300000);	// 2-5 minutes
+		setTimeout(function(){
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 600, "hidden": document.hidden} });
+		}, 600000);	// 5-10 minutes
+		setTimeout(function(){
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 900, "hidden": document.hidden} });
+		}, 900000);	// 10-15 minutes
+		setTimeout(function(){
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 1800, "hidden": document.hidden} });
+		}, 1800000);	// 15-30 minutes
 	},
 	sendEvent: function(event) {
 		event._time = Date.now();
