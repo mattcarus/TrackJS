@@ -13,8 +13,6 @@ var track = {
 		appUserID=configAppUserID||null;
 		debug=configDebug||false;
 		clientID = this.getClientID();
-		geoPromise = this.getGeo();
-		geoPromise.then(function(result){alert(result)}, function(err){alert(err)});
 		this.logger('Set ClientID');
 		this.logger('TrackJS Loading...');
 		if (typeof jQuery == 'undefined') {
@@ -27,6 +25,10 @@ var track = {
 				track.attachEvents();
 				track.startViewTimers();
 			}, 100);
+			setTimeout(function() {
+				geoPromise = track.getGeo();
+				geoPromise.then(function(result){track.geo = result}, function(err){track.logger(err)});
+			}, 5000);
 		}
 	},
 	getClientID: function() {
@@ -77,6 +79,9 @@ var track = {
 				$(document).on("click", function(event) {
 					track.sendEvent({"event": "click", "click": {"x": event.pageX, "y": event.pageY}, "scrolled": {"x": $(document).scrollLeft(), "y": $(document).scrollTop()}});
 				} );
+				$(document).on("visibilitychange", function() {
+					track.sendEvent({"event": "visibilityChange", "visibility": document.visibilityState});
+				});
 				
 			/*
 			 * Add additional events here, for example you could monitor mouseovers using this:
@@ -106,28 +111,28 @@ var track = {
 	},
 	startViewTimers: function() {
 		setTimeout(function(){
-			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 10, "hidden": document.hidden} });
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 10, "visibility": document.visibilityState} });
 		}, 10000);	// 0-10 seconds
 		setTimeout(function(){
-			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 30, "hidden": document.hidden} });
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 30, "visibility": document.visibilityState} });
 		}, 30000);	// 10-30 seconds
 		setTimeout(function(){
-			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 60, "hidden": document.hidden} });
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 60, "visibility": document.visibilityState} });
 		}, 60000);	// 30-60 seconds
 		setTimeout(function(){
-			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 120, "hidden": document.hidden} });
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 120, "visibility": document.visibilityState} });
 		}, 120000);	// 1-2 minutes
 		setTimeout(function(){
-			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 300, "hidden": document.hidden} });
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 300, "visibility": document.visibilityState} });
 		}, 300000);	// 2-5 minutes
 		setTimeout(function(){
-			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 600, "hidden": document.hidden} });
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 600, "visibility": document.visibilityState} });
 		}, 600000);	// 5-10 minutes
 		setTimeout(function(){
-			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 900, "hidden": document.hidden} });
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 900, "visibility": document.visibilityState} });
 		}, 900000);	// 10-15 minutes
 		setTimeout(function(){
-			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 1800, "hidden": document.hidden} });
+			track.sendEvent({event: "pageViewTimer", "pageViewTimer": {"timer": 1800, "visibility": document.visibilityState} });
 		}, 1800000);	// 15-30 minutes
 	},
 	sendEvent: function(event) {
@@ -154,13 +159,19 @@ var track = {
 	 * Pixel-style callback
 	 */
 		var pixel = document.createElement('img');
+		pixel.id = track.generateGUID()
 		pixel.src = trackHQ + "?event=" + btoa(JSON.stringify(event));
 		document.getElementsByTagName('body')[0].appendChild(pixel);
+		setTimeout(function(){
+			pixelToRemove = document.getElementById(pixel.id);
+			pixelToRemove.parentNode.removeChild(pixelToRemove);
+		}, 1000)
 		this.logger(event);
 	},
 	logger: function(logMsg) {
 		if ( debug ) {
-			console.log('track.js: ' + clientID + " : " + JSON.stringify(logMsg));
+			// console.log('track.js: ' + clientID + " : " + JSON.stringify(logMsg));
+			console.log(JSON.stringify(logMsg));
 		}
 	},
 	generateGUID: function() {

@@ -1,52 +1,94 @@
 <html>
+<head>
+<title>TrackJS Sample Page</title>
+
+<link href="https://fonts.googleapis.com/css?family=Cutive+Mono|Roboto+Condensed" rel="stylesheet">
+<style>
+#console {
+	background-color: black;
+	height: 300px;
+	width: 100%;
+	overflow-y: scroll;
+	font-family: 'Cutive Mono', monospace;
+	font-size: 12px;
+	text-align: left;
+}
+#console .log {
+	color: green;
+}
+#console .warn {
+	color: yellow;
+}
+#console .error {
+	color: red;
+}
+#console .exception {
+	color: red;
+}
+body {
+	margin-left: 50px;
+	margin-right: 50px;
+	font-family: 'Roboto Condensed', sans-serif;
+	text-align: center;
+}
+h2 {
+	margin-top: 80px;
+}
+h3 {
+	margin-top: 40px;
+}
+pre {
+	text-align: left;
+	border: 1px #333 solid;
+	padding: 10px;
+	margin-left: 200px;
+	margin-right: 200px;
+}
+</style>
+</head>
 <body>
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
-Test<br />
+
+<h1>TrackJS</h1>
+<p>A simple javascript tracking library for your website</p>
+<h2>Features</h2>
+<ul>
+<li>Record click events, including x/y location on the page</li>
+<li>Records the user's latitude/longitude if they have already given permission to the page, but fail gracefully if they haven't already given permission.
+<li>Record the users time spent viewing the page.
+<li>Simple integration of custom trackers</li>
+</ul>
+<h2>Installation</h2>
+<h3>TrackHQ</h3>
+<p>TrackHQ is the server-side component on TrackJS. It can either be run in your own website or on a standalone PHP webserver, for example:
+<pre>
+cd ~/TrackJS
+php -S localhost:8000
+</pre>
+<h3>Simple Usage</h3>
+<pre>
+&lt;script src="trackjs.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+track.init("http://localhost:8000/pixel.php");
+&lt;/script&gt;
+</pre>
+<h3>With App-based User Id (in addition to TrackJS's clientId)</h3>
+<pre>
+&lt;script src="trackjs.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+track.init("http://localhost:8000/pixel.php", userId);
+&lt;/script&gt;
+</pre>
+<h3>With output to the javascript console</h3>
+<pre>
+&lt;script src="trackjs.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+track.init("http://localhost:8000/pixel.php", userId, true);
+&lt;/script&gt;
+</pre>
+<h2>In Use</h2>
+<p>TrackJS is running on this page in debug mode. The console output is below and will also appear in your javascript console.</p>
+<div id="console" style="">Console:</div>
+<script src="onScreenConsole.js" type="text/javascript"></script>
 <script src="trackjs.js"></script>
 <script>
 	/*
@@ -55,6 +97,8 @@ Test<br />
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
         	alert(position.coords.latitude + ", " + position.coords.longitude);
+        }, function(position) {
+        	alert("Error finding location!");
         });
     } else {
         alert("Geolocation is not supported by this browser.");
