@@ -20,7 +20,7 @@
                 var args;
                 //alert("called console." + methodName + ", with " + arguments.length + " argument(s)");
                 args = Array.prototype.slice.call(arguments, 0);
-                document.getElementById("console").innerHTML += "<br /><span class=\"" + methodName + "\">&gt; " + args + "</span>";
+                document.getElementById("console").innerHTML += "<div class=\"logEntry\"><div class=\"left " + methodName + "\">&gt;</div><div class=\"right " + methodName + "\">" + args + "</div></div>";
                 document.getElementById("console").scrollTop = document.getElementById("console").scrollHeight;
                 Function.prototype.apply.call(oldCallback, console, arguments);
             };
