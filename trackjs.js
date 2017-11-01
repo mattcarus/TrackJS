@@ -27,7 +27,7 @@ var track = {
 			}, 100);
 			setTimeout(function() {
 				geoPromise = track.getGeo();
-				geoPromise.then(function(result){track.geo = result}, function(err){track.logger(err)});
+				geoPromise.then(coords => track.logger({"comment": "got geo", "geo": coords}));
 			}, 5000);
 		}
 	},
@@ -142,7 +142,13 @@ var track = {
 		event._title = document.title;
 		event._clientid = clientID;
 		event._appUserID = appUserID;
-		event._geo = geo;
+		if ( geo ) {
+			console.log("Using pre-set geo: " + geo);
+			event._geo = geo;
+		} else {
+			console.log("No Geo set, trying to find it...");
+			track.getGeo().then(coords => track.logger(coords));
+		}
 		
 	/*
 	 * AJAX-style callback to server (note CORS)
